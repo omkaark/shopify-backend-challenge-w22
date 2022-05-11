@@ -6,11 +6,9 @@ const dev = process.env.NODE_ENV !== 'production'
 const app = next({ dev })
 const handle = app.getRequestHandler()
 
-let inventory = [];
-
 app.prepare().then(() => {
     const server = express();
-    const apiRoutes = require('./routes/apiRoutes.js')(inventory);
+    const apiRoutes = require('./routes/apiRoutes.js');
 
     server.use(express.json());
 
