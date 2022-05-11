@@ -1,5 +1,10 @@
 var express = require('express');
 
+/* TODO:
+ * Add validation for newCellData and send 400 if data not good. Make a method under utils for this
+ * Extension tasks
+*/
+
 module.exports = (inventory) => {
     var router = express.Router();
 
@@ -18,7 +23,7 @@ module.exports = (inventory) => {
 
         inventory.push(newCellData);
 
-        res.status(200).send({ request: "POST /inventory", inventory, logs });
+        res.status(200).send({ request: "POST /inventory" });
     });
 
     router.put('/inventory', (req, res) => { // Edit inventory items
@@ -28,7 +33,7 @@ module.exports = (inventory) => {
         if (itemId && newCellData) {
             const indexToEdit = inventory.findIndex(item => item.itemId === itemId);
             inventory[indexToEdit] = newCellData;
-            res.status(200).send({ request: "PUT /inventory", inventory, logs });
+            res.status(200).send({ request: "PUT /inventory" });
         } else
             res.status(400).send({ error: "itemId or newCellData haven't been provided" });
     });
@@ -39,7 +44,7 @@ module.exports = (inventory) => {
 
         if (itemId) {
             inventory = inventory.filter(item => item.itemId !== itemId);
-            res.status(200).send({ request: "DELETE /inventory", inventory, logs });
+            res.status(200).send({ request: "DELETE /inventory" });
         }
         else
             res.status(400).send({ error: "itemId hasn't been provided" });
@@ -62,7 +67,12 @@ module.exports = (inventory) => {
             stockIncoming: 123,
         }]
         logs.push('reset');
-        res.status(200).send({ request: "GET /inventory (reset)", inventory, logs });
+        res.status(200).send({ request: "GET /inventory (reset)" });
+    });
+
+    router.get('/debug', (req, res) => { // Testing feature that adds dummy data
+        logs.push('debug');
+        res.status(200).send({ request: "GET /inventory (reset)", logs, inventory });
     });
 
     return router;

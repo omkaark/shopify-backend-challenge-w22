@@ -4,9 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "nodemon server/server.js",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "node server/server.js"
   },
   "dependencies": {
     "axios": "^0.27.2",
