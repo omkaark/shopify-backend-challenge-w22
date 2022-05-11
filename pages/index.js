@@ -4,20 +4,66 @@ import styles from '../styles/index.module.css';
 import axios from 'axios';
 
 export default function App() {
-  const [inventory, setInventory] = useState([]);
+  let [inventory, setInventory] = useState([]);
 
-  const Button = ({ children, link }) => {
-    return (
-      <a style={{ padding: "10px", margin: "10px", backgroundColor: "#eee", border: "1px #000000 solid" }} href={link}>
-        {children}
-      </a>
-    );
-  }
+  const createInventoryItem = async () => {
+    let newInventory = [...inventory, {
+      itemId: null,
+      name: "",
+      stockAvailable: 0,
+      stockOnHand: 0,
+      stockHolding: 0,
+      stockIncoming: 0
+    }];
 
-  const InventoryCell = ({ data }) => {
+    setInventory(newInventory);
+  };
+
+  const saveCreatedInventoryItem = async () => {
+    let newInventory = [...inventory, {
+      itemId: null,
+      name: "",
+      stockAvailable: 0,
+      stockOnHand: 0,
+      stockHolding: 0,
+      stockIncoming: 0
+    }];
+
+    setInventory(newInventory);
+  };
+
+  const editInventoryItem = async (idx, newCellData) => {
+    let newInventory = [...inventory];
+    console.log(newInventory);
+    console.log(idx);
+    newInventory[idx] = newCellData;
+
+    let res = await axios.put('/api/inventory', {
+      itemId: newCellData.itemId,
+      newCellData: newCellData
+    });
+
+    res.status === 200 && setInventory(newInventory);
+  };
+
+  const deleteInventoryItem = async (idx, itemId) => {
+    let newInventory = [...inventory];
+    newInventory.splice(idx, 1);
+
+    let res = await axios.delete('/api/inventory', {
+      data: {
+        itemId: itemId
+      }
+    });
+
+    res.status === 200 && setInventory(newInventory);
+  };
+
+  const InventoryCell = ({ data, idx }) => {
 
     const [cellData, setCellData] = useState({});
-    const [isEditMode, setIsEditMode] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(data.itemId ? false : true);
+    const [newCell, setNewCell] = useState(data.itemId ? false : true);
 
     useEffect(() => {
       setCellData(data);
@@ -26,15 +72,15 @@ export default function App() {
     return (
       isEditMode ? (<tr className={styles.inventoryCell} >
         <td>
-          <input value={cellData.itemId} onChange={(e) => setCellData(cd => {
+          <input placeholder='Input a number' type='number' value={cellData.itemId} onChange={(e) => setCellData(cd => {
             return {
               ...cd,
-              itemId: e.target.value
+              itemId: parseInt(e.target.value)
             };
           })} />
         </td>
         <td>
-          <input value={cellData.name} onChange={(e) => setCellData(cd => {
+          <input placeholder='Input a name' value={cellData.name} onChange={(e) => setCellData(cd => {
             return {
               ...cd,
               name: e.target.value
@@ -42,39 +88,42 @@ export default function App() {
           })} />
         </td>
         <td>
-          <input value={cellData.stockAvailable} onChange={(e) => setCellData(cd => {
+          <input placeholder='Input a number' type='number' value={cellData.stockAvailable} onChange={(e) => setCellData(cd => {
             return {
               ...cd,
-              stockAvailable: e.target.value
+              stockAvailable: parseInt(e.target.value)
             };
           })} />
         </td>
         <td>
-          <input value={cellData.stockOnHand} onChange={(e) => setCellData(cd => {
+          <input placeholder='Input a number' type='number' value={cellData.stockOnHand} onChange={(e) => setCellData(cd => {
             return {
               ...cd,
-              stockOnHand: e.target.value
+              stockOnHand: parseInt(e.target.value)
             };
           })} />
         </td>
         <td>
-          <input value={cellData.stockHolding} onChange={(e) => setCellData(cd => {
+          <input placeholder='Input a number' type='number' value={cellData.stockHolding} onChange={(e) => setCellData(cd => {
             return {
               ...cd,
-              stockHolding: e.target.value
+              stockHolding: parseInt(e.target.value)
             };
           })} />
         </td>
         <td>
-          <input value={cellData.stockIncoming} onChange={(e) => setCellData(cd => {
+          <input placeholder='Input a number' type='number' value={cellData.stockIncoming} onChange={(e) => setCellData(cd => {
             return {
               ...cd,
-              stockIncoming: e.target.value
+              stockIncoming: parseInt(e.target.value)
             };
           })} />
         </td>
         <td>
-          <button onClick={() => setIsEditMode(false)}>Save</button>
+          <button onClick={() => {
+            setIsEditMode(false);
+            newCell ? saveInventoryItem : editInventoryItem(idx, cellData);
+          }}>Save</button>
         </td>
       </tr >) :
         (<tr className={styles.inventoryCell}>
@@ -86,7 +135,7 @@ export default function App() {
           <td>{cellData.stockIncoming}</td>
           <td>
             <button onClick={() => setIsEditMode(true)}>Edit</button>
-            <button>Delete</button>
+            <button onClick={() => deleteInventoryItem(key, cellData.itemId)}>Delete</button>
           </td>
         </tr>)
     );
@@ -98,12 +147,16 @@ export default function App() {
       .then(data => setInventory(data.inventory));
   }, [])
 
+  useEffect(() => {
+    console.log("Inventory changed", inventory);
+  }, [inventory])
+
   return (
     <div style={{ display: "flex" }}>
       <Head>
         <title>Inventory Management</title>
       </Head>
-      <button>Create Inventory Item</button>
+      <button onClick={createInventoryItem}>Create Dummy Inventory Item</button>
       <table className={styles.table}>
         <tr>
           <th>Item ID</th>
@@ -114,7 +167,7 @@ export default function App() {
           <th>Stock Incoming</th>
           <th>Actions</th>
         </tr>
-        {inventory.map((data, idx) => <InventoryCell key={idx} data={data} />)}
+        {inventory.map((data, idx) => <InventoryCell key={idx} idx={idx} data={data} />)}
       </table>
     </div >
   )
