@@ -13,8 +13,11 @@ module.exports = (inventory) => {
     });
 
     router.post('/inventory', (req, res) => { // Create inventory item
+        const { newCellData } = req.body;
         logs.push('post');
-        console.log(req.body);
+
+        inventory.push(newCellData);
+
         res.status(200).send({ request: "POST /inventory", inventory, logs });
     });
 

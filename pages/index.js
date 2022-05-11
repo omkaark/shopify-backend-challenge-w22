@@ -19,23 +19,29 @@ export default function App() {
     setInventory(newInventory);
   };
 
-  const saveCreatedInventoryItem = async () => {
-    let newInventory = [...inventory, {
-      itemId: null,
-      name: "",
-      stockAvailable: 0,
-      stockOnHand: 0,
-      stockHolding: 0,
-      stockIncoming: 0
-    }];
+  const createDummyInventoryItem = async () => {
+    saveCreatedInventoryItem({
+      itemId: Math.floor(Math.random() * 90000) + 10000,
+      name: `Product ${(Math.random() + 1).toString(36).substring(5)}`,
+      stockAvailable: Math.floor(Math.random() * 100),
+      stockOnHand: Math.floor(Math.random() * 100),
+      stockHolding: Math.floor(Math.random() * 100),
+      stockIncoming: Math.floor(Math.random() * 100)
+    });
+  }
 
-    setInventory(newInventory);
+  const saveCreatedInventoryItem = async (newCellData) => {
+    let newInventory = [...inventory, newCellData];
+
+    let res = await axios.post('/api/inventory', {
+      newCellData: newCellData
+    });
+
+    res.status === 200 && setInventory(newInventory);
   };
 
   const editInventoryItem = async (idx, newCellData) => {
     let newInventory = [...inventory];
-    console.log(newInventory);
-    console.log(idx);
     newInventory[idx] = newCellData;
 
     let res = await axios.put('/api/inventory', {
@@ -122,7 +128,7 @@ export default function App() {
         <td>
           <button onClick={() => {
             setIsEditMode(false);
-            newCell ? saveInventoryItem : editInventoryItem(idx, cellData);
+            newCell ? saveCreatedInventoryItem(cellData) : editInventoryItem(idx, cellData);
           }}>Save</button>
         </td>
       </tr >) :
@@ -135,7 +141,7 @@ export default function App() {
           <td>{cellData.stockIncoming}</td>
           <td>
             <button onClick={() => setIsEditMode(true)}>Edit</button>
-            <button onClick={() => deleteInventoryItem(key, cellData.itemId)}>Delete</button>
+            <button onClick={() => deleteInventoryItem(idx, cellData.itemId)}>Delete</button>
           </td>
         </tr>)
     );
@@ -156,7 +162,10 @@ export default function App() {
       <Head>
         <title>Inventory Management</title>
       </Head>
-      <button onClick={createInventoryItem}>Create Dummy Inventory Item</button>
+      <div>
+        <button onClick={createInventoryItem}>Create New Inventory Item</button>
+        <button onClick={createDummyInventoryItem}>Create Dummy Inventory Item</button>
+      </div>
       <table className={styles.table}>
         <tr>
           <th>Item ID</th>
